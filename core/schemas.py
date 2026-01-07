@@ -9,7 +9,6 @@ class TaskPair(BaseModel):
     task_id: str
     domain: str
     prompt: str
-    rubric: str  # Scoring rubric for this task
     first_image: Any  # PIL Image
     final_image: Optional[Any] = None  # PIL Image
     ground_truth_video: Optional[str] = None  # Path to video (optional)

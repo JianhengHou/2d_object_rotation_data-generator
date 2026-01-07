@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageChops, ImageFilter
 from core import BaseGenerator, TaskPair, ImageRenderer
 from core.video_utils import VideoGenerator
 from .config import TaskConfig
-from .prompts import get_prompt, get_rubric
+from .prompts import get_prompt
 
 # Check if chess library is available
 import importlib.util
@@ -83,16 +83,13 @@ class TaskGenerator(BaseGenerator):
         if self.config.generate_videos and self.video_generator:
             video_path = self._generate_video(first_image, final_image, task_id, task_data)
         
-        # Select prompt and rubric
-        task_type = task_data.get("type", "default")
-        prompt = get_prompt(task_type)
-        rubric = get_rubric(task_type)
+        # Select prompt
+        prompt = get_prompt(task_data.get("type", "default"))
         
         return TaskPair(
             task_id=task_id,
             domain=self.config.domain,
             prompt=prompt,
-            rubric=rubric,
             first_image=first_image,
             final_image=final_image,
             ground_truth_video=video_path

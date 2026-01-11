@@ -30,7 +30,7 @@ class TaskConfig(GenerationConfig):
     #  OVERRIDE DEFAULTS
     # ══════════════════════════════════════════════════════════════════════════
     
-    domain: str = Field(default="chess")
+    domain: str = Field(default="2d_object_rotation")
     image_size: tuple[int, int] = Field(default=(512, 512))
     
     # ══════════════════════════════════════════════════════════════════════════

@@ -1,103 +1,87 @@
-# Template Data Generator 🎲
+# 2D Object Rotation Data Generator
 
-A minimal template for creating synthetic reasoning task generators. Fork this and customize it for your own task (maze, sudoku, rotation, etc.).
+This generator produces datasets for models that reason about 2D object rotation around geometric centers. Each task shows 1-5 random 2D objects rotating independently around their respective centroids.
 
----
+## Overview
 
-## 🚀 Quick Start
+- Domain: `2d_object_rotation` — multiple objects rotate around their own centroids.
+- Goal: Each object rotates by a specified angle (clockwise or counterclockwise) at uniform speed.
+
+## Quick Start
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/your-task-generator.git
-cd your-task-generator
+git clone https://github.com/your-org/2d_object_rotation_data-generator.git
+cd 2d_object_rotation_data-generator
 
-# 2. Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# 3. Install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 pip install -e .
 
-# 4. Generate tasks
-python examples/generate.py --num-samples 50
+python examples/generate.py --num-samples 10
 ```
 
----
-
-## 📁 Structure
+## Output Format
 
 ```
-template-data-generator/
-├── core/                    # ✅ KEEP: Standard utilities
-│   ├── base_generator.py   # Abstract base class
-│   ├── schemas.py          # Pydantic models
-│   ├── image_utils.py      # Image helpers
-│   ├── video_utils.py      # Video generation
-│   └── output_writer.py    # File output
-├── src/                     # ⚠️ CUSTOMIZE: Your task logic
-│   ├── generator.py        # Your task generator
-│   ├── prompts.py          # Your prompt templates
-│   └── config.py           # Your configuration
-├── examples/
-│   └── generate.py         # Entry point
-└── data/questions/         # Generated output
+data/questions/2d_object_rotation_task/{task_id}/
+├── first_frame.png
+├── final_frame.png
+├── prompt.txt
+└── ground_truth.mp4 (optional)
 ```
 
----
+## Task Description
 
-## 📦 Output Format
+- Initial frame (`first_frame.png`): 1-5 random 2D geometric objects (circle, square, triangle, ellipse, or irregular polygon) arranged in a grid layout. Each object is shown with a rotation arc, arrowhead indicating direction, and degree label.
+- Prompt (`prompt.txt`): "The {N} 2D object(s) in the image rotate around their respective centroids at a uniform speed as shown in the diagram."
+- Final frame (`final_frame.png`): Each object rotated by the specified degrees around its own geometric center.
+- Video (`ground_truth.mp4`): Smooth animation showing each object rotating independently around its centroid.
+- Title overlay: Large centered text showing rotation direction (Clockwise/Counterclockwise) and angle.
 
-Every generator produces:
+## Randomness Factors
+
+- Number of objects (1-5)
+- Object types: circle, square, triangle, ellipse, irregular polygon (4-8 vertices, possibly concave)
+- Object size, color, and position within grid cells
+- Rotation direction: clockwise or counterclockwise
+- Rotation angle: 10-180 degrees
+- All objects rotate by the same angle in the same direction
+
+## Configuration
+
+Edit `src/config.py` to control dataset behavior:
+
+- `domain` (default `2d_object_rotation`)
+- `image_size` (default `(512, 512)`)
+- `generate_videos` (default `True`)
+- `video_fps` (default `30`)
+
+Ensure consistent results by passing a fixed `seed`.
+
+## Project Structure
 
 ```
-data/questions/{domain}_task/{task_id}/
-├── first_frame.png          # Initial state (REQUIRED)
-├── final_frame.png          # Goal state (or goal.txt)
-├── prompt.txt               # Instructions (REQUIRED)
-└── ground_truth.mp4         # Solution video (OPTIONAL)
+2d_object_rotation_data-generator/
+├── core/                # framework utilities (do not modify)
+├── src/                 # task: generator.py, prompts.py, config.py
+├── examples/            # CLI entry point
+├── data/questions/      # generated dataset
+├── requirements.txt
+└── README.md
 ```
 
----
+## Implementation Notes
 
-## 🎨 Customization (3 Files to Modify)
+- Objects are arranged in a grid layout (1x1, 2x1, 2x2, or 3x2) to prevent overlap
+- Each object rotates around its own geometric center (centroid)
+- Rotation uses precise mathematical transformation: `(x', y') = (cx + (x-cx)cos(θ) - (y-cy)sin(θ), cy + (x-cx)sin(θ) + (y-cy)cos(θ))`
+- Irregular polygons maintain consistent shape across frames by pre-generating vertices
+- Arc visualization shows rotation path with arrowhead indicating direction
+- Videos are generated using OpenCV when available (gracefully degrades if not installed)
 
-### 1. Update `src/generator.py`
+## License
 
-Replace the example chess generator with your task:
+MIT
 
-```python
-from core import BaseGenerator, TaskPair, ImageRenderer
-
-class MazeGenerator(BaseGenerator):
-    def __init__(self, config):
-        super().__init__(config)
-        self.renderer = ImageRenderer(config.image_size)
-    
-    def generate_task_pair(self, task_id: str) -> TaskPair:
-        # 1. Generate your problem
-        maze = self.create_maze()
-        
-        # 2. Solve it
-        solution = self.solve_maze(maze)
-        
-        # 3. Render images
-        first_image = self.render_maze(maze)
-        final_image = self.render_maze_with_solution(maze, solution)
-        
-        # 4. Create TaskPair
-        return TaskPair(
-            task_id=task_id,
-            domain=self.config.domain,
-            prompt=self.select_prompt(),
-            first_image=first_image,
-            final_image=final_image,
-            ground_truth_video=None  # Optional
-        )
-```
-
-### 2. Update `src/prompts.py`
 
 Replace chess prompts with yours:
 
